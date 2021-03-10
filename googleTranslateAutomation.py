@@ -1,6 +1,9 @@
-import webbrowser
+from selenium import webdriver
+from datetime import datetime
+import pyperclip
 import requests
 import time
+import os
 
 
 def parse_string(text):
@@ -57,9 +60,40 @@ def open_google_trans(source_language="en", target_language="pt", text_to_transl
     # f-string with variables:
     link = f"https://translate.google.com/?sl={sl}&tl={tl}&text={text_to_translate}&op={operation}"
 
-    # This function, from the webbrowser module, opens a link in the default browser
-    webbrowser.open(link)
+    # create an instance of the Chrome browser
+    driver = webdriver.Chrome(executable_path=r"C:\Users\Fabricio\Desktop\chromedriver.exe")
+    
+    # open the link in the browser
+    driver.get(link)
 
+    # wait for 15 seconds to page to load
+    time.sleep(15)
+
+    # find the copy translation button and click on it
+    driver.find_element_by_xpath(f'//*[text()="content_copy"]').click()
+    
+    # paste the translation saved in the clipboard to a variable
+    translation = pyperclip.paste()
+
+    # create subdirectory "./translations", if it doesn't exist
+    os.makedirs('translation', exist_ok=True)
+
+    # get the local iso 8601 datetime without microseconds
+    current_datetime = datetime.now().replace(microsecond=0)
+    current_datetime = current_datetime.isoformat().replace(":", "-")
+
+    # create filename
+    filename = os.path.join(
+        "translations", 
+        current_datetime + "_" + target_language + ".txt")
+
+    # create .txt file to save the translation
+    with open(filename, "w", encoding="UTF-8") as file:
+        file.write(translation)
+
+    # close the browser
+    driver.quit()
+    
 
 if __name__ == "__main__":
     languages = ["pt", "es", "eo", "la", "tr", "ko", "ja"]
@@ -68,4 +102,3 @@ if __name__ == "__main__":
     
     for language in languages:
         open_google_trans("en", language, text_to_translate)
-        time.sleep(5)
