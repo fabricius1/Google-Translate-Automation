@@ -18,7 +18,24 @@ def parse_string(text):
             ("<", "%3C"),
             (">", "%3E"),
             ("#", "%23"),
-            ("|", "%7C")
+            ("|", "%7C"),
+            ("&", "%26"),
+            ("=", "%3D"),
+            ("@", "%40"),
+            ("#", "%23"),
+            ("$", "%24"),
+            ("^", "%5E"),
+            ("`", "%60"),
+            ("+", "%2B"),
+            ("\'", "%27"),
+            ("{", "%7B"),
+            ("}", "%7D"),
+            ("[", "%5B"),
+            ("]", "%5D"),
+            ("/", "%2F"),
+            ("\\", "%5C"),
+            (":", "%3A"),
+            (";", "%3B")
         )
 
     for pair in special_characters:
@@ -44,7 +61,7 @@ def open_google_trans(source_language="en", target_language="pt", text_to_transl
         text_to_translate = requests.get(text_to_translate).text
 
     elif text_to_translate.endswith(".txt"):
-        with open(text_to_translate) as file:
+        with open(text_to_translate, encoding="UTF-8") as file:
             text_to_translate = file.read()
 
     # variables to be used in the url:
@@ -61,6 +78,7 @@ def open_google_trans(source_language="en", target_language="pt", text_to_transl
     link = f"https://translate.google.com/?sl={sl}&tl={tl}&text={text_to_translate}&op={operation}"
 
     # create an instance of the Chrome browser
+    # (remember to adapt the executable_path to your machine environment)
     driver = webdriver.Chrome(executable_path=r"C:\Users\Fabricio\Desktop\chromedriver.exe")
     
     # open the link in the browser
@@ -76,7 +94,7 @@ def open_google_trans(source_language="en", target_language="pt", text_to_transl
     translation = pyperclip.paste()
 
     # create subdirectory "./translations", if it doesn't exist
-    os.makedirs('translation', exist_ok=True)
+    os.makedirs('translations', exist_ok=True)
 
     # get the local iso 8601 datetime without microseconds
     current_datetime = datetime.now().replace(microsecond=0)
@@ -99,6 +117,6 @@ if __name__ == "__main__":
     languages = ["pt", "es", "eo", "la", "tr", "ko", "ja"]
     url = "https://raw.githubusercontent.com/fabricius1/Google-Translate-Automation/master/textToTranslate.txt"
     text_to_translate = url
-    
+
     for language in languages:
         open_google_trans("en", language, text_to_translate)
