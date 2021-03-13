@@ -1,0 +1,49 @@
+INTRODUÇÃO
+
+Nos últimos tempos, quando eu precisava escrever código em Python para traduzir textos para uma língua estrangeira, eu recorria à biblioteca Googletrans, a qual é de uso muito fácil e se alimenta, sem restrições, da API do Google Tradutor. Contudo, faz alguns meses que essa biblioteca sofre com um sério bug (mais sobre o assunto pode ser visto em https://github.com/ssut/py-googletrans/issues/234), o que faz com que, pelo menos por enquanto, seja inviável a sua utilização.
+Embora existam outras opções de pacotes Python disponíveis para abordar esse mesmo problema, decidi utilizar esse pequeno contratempo como uma oportunidade de aprendizado. Enquanto a Googletrans não volta a funcionar corretamente, seria possível escrever um mini-programa de web scraping, de modo a automatizar a busca por traduções direto no site do Google Tradutor? Para minha felicidade, descobri que sim, inclusive de um modo bastante simples, usando apenas a função open() do módulo built-in webbrowser. 
+O presente artigo, portanto, mostra o resultado final desse meu trabalho de webscraping, o qual foi inspirado no programa mapIt.py, presente no capítulo 12 do ótimo livro Automate the Boring Stuff with Python (link para a leitura completa: https://automatetheboringstuff.com/2e/chapter12/). Nele o autor, Al Sweigart, apresenta uma solução bem simples para automatizar buscas de endereços no Google Maps. Com certeza, por eu já ter lido a citada obra e praticado os exemplos ali presentes (bem como pela familiaridade prévia com a biblioteca googletrans), foi relativamente fácil descobrir o padrão de URL do Google Tradutor e, assim, escrever o meu próprio código.
+
+COMO TRADUZIR UM TEXTO USANDO A BIBLIOTECA WEBBROWSER
+
+Acessemos o site do Google Tradutor (https://translate.google.com/) para fazer uma pequena tradução do inglês para o português e, na sequência, analisemos as informações fornecidas pela página, em especial a nova URL, apresentada após o site traduzir o nosso texto:
+[imagem 1]
+Aviso (não tão) importante (assim): a vírgula do vocativo de “Hello, World!” foi intencionalmente retirada aqui, para fins didáticos (embora haja discussões sobre se a sua utilização é realmente necessária: https://english.stackexchange.com/questions/74985/should-the-beginners-program-read-hello-world#:~:text=In%20the%20typical%20example%20you,and%20the%20thing%20being%20greeted) 
+Como é possível ver na tela acima, há quatro parâmetros apensados na URL, os quais são separados por três símbolos ampersand ( & ) . São eles:
+•	sl=en
+&
+•	tl=pt
+&
+•	text=Hello%20World!
+&
+•	op=translate
+
+Note-se ainda o ponto de interrogação antes de todos esses parâmetros. 
+É bem provável que as siglas “sl” e “tl” signifiquem, respectivamente, source language (língua de origem) e target language (língua-alvo ou língua de destino). Por outro lado, “en”, o valor do parâmetro “sl”, é a sigla do idioma inglês, enquanto “pt” é a do português. Já o parâmetro text traz, como seu valor, o texto que deve ser traduzido. Por fim, “op” (provavelmente de operation) tem como valor translate.
+Um outro aspecto a se considerar na estrutura da URL analisada: o espaço em branco entre as palavras “Hello” e “World!” foi substituído pela sequência %20. Com efeito, este não é o único caracter que é traduzido de forma especial na URL do Google Tradutor. A vírgula, por exemplo, é transcrita na URL pela sequência %2C , o que faz uma vírgula seguida de um espaço em branco ser representada por %2C%20 . Você mesmo pode fazer inserções de caracteres especiais na sua tradução, para ver se eles são ou não traduzidos. O site abaixo possui uma lista não exaustiva de alguns desses caracteres especiais e como eles aparecem numa URL do Google: https://developers.google.com/maps/documentation/URLs/URL-encoding 
+Agora, já estamos prontos para analisar o código inicial abaixo:
+
+https://gist.github.com/fabricius1/5...
+
+Como dito antes, a simplicidade do código é muito grande: ele se constitui tão somente de uma f-string da URL final, com a interpolação dos valores dos parâmetros nos seus lugares corretos. Na sequência, essa URL é aberta pela função open(), do módulo webbrowser.
+Contudo, quando rodamos o código, tal como apresentado, alguns pequenos problemas acontecem, em especial o fato de que a formatação do texto em versos não é reproduzida, no site do Google Tradutor, para o texto de destino. Isso ocorre porque, quando não damos um tratamento ao texto de origem e simplesmente o utilizamos direto na URL, os caracteres de quebra de linha (o famoso \n) não são identificados de forma automática, apenas os caracteres de espaço em branco. 
+Para contornar esse problema, criei uma pequena função personalizada, que realiza a substituição de determinados caracteres por seus correspondentes símbolos na URL. O código completo, com o acréscimo dessa função, está reproduzido abaixo:
+
+https://gist.github.com/fabricius1/7...
+
+GENERALIZANDO O CÓDIGO COM O INPUT DE UM ARQUIVO .TXT
+
+Agora, vamos transformar o corpo principal do nosso código em uma função, chamada open_google_trans, a qual receberá os parâmetros sl, st e text. Acrescentemos também o código do dunder name, dunder main no final do arquivo:
+
+https://gist.github.com/fabricius1/a...
+
+A última modificação que faremos nesse código, por ora, será o acréscimo de um recurso que permita o upload de um arquivo .txt com os textos a serem traduzidos. Para tanto, utilizaremos o arquivo textToTranslate.txt, disponível em https://raw.githubusercontent.com/fabricius1/Google-Translate-Automation/master/textToTranslate.txt . Aqui, a ideia é traduzir o prólogo original da obra Romeu e Julieta para sete idiomas distintos: português (pt),  espanhol (es), esperanto (eo), latim (la), turco (tr), coreano (ko) e japonês (ja). Para cada uma dessas línguas, será aberta uma aba diferente no navegador, com a respectiva tradução para a língua-alvo.  
+Para outros códigos de línguas, basta acessar o site https://cloud.google.com/translate/docs/languages 
+Você pode baixar o arquivo .txt diretamente para a sua máquina, ou pode ainda adaptar o código com poucas linhas da biblioteca requests, que fará o download do arquivo diretamente do meu repositório no Github. Eu acrescentarei no código esta adaptação com o uso da biblioteca requests (que é facilmente instalada via pip install requests), bem como já fiz as adaptações para traduzir o arquivo .txt para as sete línguas supramencionadas, com uma pequena pausa de 5 segundos entre cada nova tradução. A versão final do programa é apresentada abaixo.
+
+https://gist.github.com/fabricius1/1...
+
+Uma observação importante sobre uma limitação do código aqui apresentado: o Google Translate restringe a 5 mil caracteres o texto da língua de origem. Assim, caso haja necessidade de traduzir textos maiores, o código precisará ser adaptado para essa necessidade específica. Para mim, até o momento, não surgiu essa demanda. 
+Por fim, gostaria de fazer um comentário extra-código. Cabe destacar que as traduções do Google Tradutor devem ser sempre revistas pela(o) usuária(o), caso ela(e) tenha a habilidade necessária de fazê-lo na língua de destino. Com efeito, a qualidade da tradução varia muito de língua para língua: a do latim, por exemplo, em geral ainda apresenta problemas sérios e básicos, a tal ponto que, na minha opinião, o serviço do Google para essa língua deveria ser evitado. Como ex-professor de latim em uma Universidade Federal, vi mais de um aluno incauto ter problemas ao tentar me apresentar uma tradução desconexa como trabalho de casa, retirada diretamente do Google Tradutor. E lá se vão dez anos desde esses acontecimentos, e as traduções do Google envolvendo o latim ainda tem um bom espaço para serem melhoradas...
+Meu muito obrigado a você, por ter prestigiado meu texto com a sua leitura.
+Happy coding!
