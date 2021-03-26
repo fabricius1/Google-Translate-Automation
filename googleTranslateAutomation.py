@@ -166,7 +166,7 @@ def translate_any_text(text_to_translate=None, target_language="pt", source_lang
         - source_language(type: str; default: "en").
 
         Return is None.
-    """
+    """    
     # Call check_input_type on the text_to_translate parameter
     text_to_translate = check_input_type(text_to_translate)
 
@@ -181,14 +181,18 @@ def translate_any_text(text_to_translate=None, target_language="pt", source_lang
     # split the text in a list with its paragraphs
     paragraphs = text_to_translate.split('\n')
 
-    for paragraph in paragraphs:
+    for index, paragraph in enumerate(paragraphs):
         # save paragraph in the chunk str, if condition is True
         if len(chunk + paragraph) < 4000:
             chunk += "\n" + paragraph
         else:
-        # append chunk in the chunks list, when its len comes closer to 4k char
+        # append chunk in the chunks list, when its length comes closer to 4k char
             chunks.append(chunk)
-            chunk = "\n" + paragraph
+            chunk = ""
+            chunk += "\n" + paragraph
+    
+    # append last chunk to chunks list
+    chunks.append(chunk)
 
     # This coefficent will help to pad zeros in the temporary filenames
     if len(chunks) < 10:
@@ -202,7 +206,7 @@ def translate_any_text(text_to_translate=None, target_language="pt", source_lang
 
     count = 0
     # for each text chunk:
-    for chunk in chunks:
+    for index, chunk in enumerate(chunks):
         count += 1
         # create name
         name = "chunk" + (padding_coef - len(str(count))) * "0" + str(count)
@@ -213,6 +217,7 @@ def translate_any_text(text_to_translate=None, target_language="pt", source_lang
                             source_language,
                             input_checked=True,
                             name=name)
+        time.sleep(10)
 
     complete_translation = ""
     # loop over files in ./translations directory
@@ -223,20 +228,23 @@ def translate_any_text(text_to_translate=None, target_language="pt", source_lang
                 complete_translation += f.read()
             os.remove(os.path.join("translations", file))
 
-    # save variable complete_translation as complete.txt
+    # save variable complete_translation as the complete.txt file
     with open(os.path.join("translations", "complete.txt"), "w", encoding="UTF-8") as file:
         file.write(complete_translation)
 
 
 if __name__ == "__main__":
-    translate_any_text("longerTextToTranslate.txt", "eo", "pt")
+    use_translate_any_text = True
+
+    if use_translate_any_text:
+        text = "https://raw.githubusercontent.com/fabricius1/Google-Translate-Automation/master/longerTextToTranslate.txt"
+        translate_any_text(text, "en", "pt")
+    else:
+        languages = ["pt", "es", "eo", "la", "tr", "ko", "ja"]
+        url = "https://raw.githubusercontent.com/fabricius1/Google-Translate-Automation/master/textToTranslate.txt"
+        text_to_translate = url
+
+        for language in languages:
+            search_google_trans(text_to_translate, language, "en", input_checked=False)
+
     print('\n\nFinished!\n\n')
-
-    ### older version for code as "__main__":
-
-    # languages = ["pt", "es", "eo", "la", "tr", "ko", "ja"]
-    # url = "https://raw.githubusercontent.com/fabricius1/Google-Translate-Automation/master/textToTranslate.txt"
-    # text_to_translate = url
-
-    # for language in languages:
-    #     search_google_trans(text_to_translate, language, "en", input_checked=False)
