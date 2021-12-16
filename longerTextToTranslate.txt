@@ -1,3 +1,4 @@
+
 INTRODUÇÃO
 
 Nos últimos tempos, quando eu precisava escrever código em Python para traduzir textos para uma língua estrangeira, eu recorria à biblioteca Googletrans, a qual é de uso muito fácil e se alimenta, sem restrições, da API do Google Tradutor. Contudo, faz alguns meses que essa biblioteca sofre com um sério bug (mais sobre o assunto pode ser visto em https://github.com/ssut/py-googletrans/issues/234), o que faz com que, pelo menos por enquanto, seja inviável a sua utilização.
